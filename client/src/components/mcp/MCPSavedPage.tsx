@@ -3,7 +3,7 @@ import { socket } from '@/lib/socket'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Sidebar, type AppView } from '@/components/layout/Sidebar'
+import { AppLayout, type AppView } from '@/components/layout/AppLayout'
 import {
   loadMCPServers,
   removeMCPServer,
@@ -123,11 +123,8 @@ export default function MCPSavedPage({ currentView, onNavigate }: MCPSavedPagePr
   const serverEntries = Object.entries(servers.mcpServers)
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden font-sans">
-      <Sidebar currentView={currentView} onNavigate={onNavigate} isConnected={isConnected} />
-
-      <main className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
-        <header className="h-14 border-b flex items-center px-6 bg-background/50 backdrop-blur sticky top-0 z-10 gap-4">
+    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected}>
+      <header className="h-12 shrink-0 border-b flex items-center px-6 bg-background/50 backdrop-blur sticky top-0 z-10 gap-4">
           <Button
             variant="ghost"
             size="sm"
@@ -269,7 +266,6 @@ export default function MCPSavedPage({ currentView, onNavigate }: MCPSavedPagePr
             )}
           </div>
         </ScrollArea>
-      </main>
-    </div>
+    </AppLayout>
   )
 }

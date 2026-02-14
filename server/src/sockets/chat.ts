@@ -16,8 +16,8 @@ export default function setupChatSockets(io: Server) {
             socket.leave(roomId);
         });
 
-        socket.on('send_message', async (data: { roomId: string, message: string, type: 'human' | 'system' | 'ai', skills?: string }) => {
-            const { roomId, message, type, skills } = data;
+        socket.on('send_message', async (data: { roomId: string, message: string, type: 'human' | 'system' | 'ai', skills?: string, audioData?: string }) => {
+            const { roomId, message, type, skills, audioData } = data;
             console.log(`Received message in ${roomId}:`, message);
 
             // Broadcast the user message back to the room (optimistic update or just relay)
@@ -25,7 +25,8 @@ export default function setupChatSockets(io: Server) {
                 id: Date.now().toString(),
                 content: message,
                 type: type,
-                timestamp: new Date()
+                timestamp: new Date(),
+                ...(audioData && { audioData })
             });
 
             if (type === 'human') {

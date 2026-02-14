@@ -14,14 +14,15 @@ function setupChatSockets(io) {
             socket.leave(roomId);
         });
         socket.on('send_message', async (data) => {
-            const { roomId, message, type, skills } = data;
+            const { roomId, message, type, skills, audioData } = data;
             console.log(`Received message in ${roomId}:`, message);
             // Broadcast the user message back to the room (optimistic update or just relay)
             io.to(roomId).emit('receive_message', {
                 id: Date.now().toString(),
                 content: message,
                 type: type,
-                timestamp: new Date()
+                timestamp: new Date(),
+                ...(audioData && { audioData })
             });
             if (type === 'human') {
                 try {

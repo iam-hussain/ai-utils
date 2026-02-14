@@ -3,10 +3,10 @@ import { socket } from '@/lib/socket'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Mic, Send, Paperclip, MoreVertical, Wrench, Loader2 } from 'lucide-react'
+import { Mic, Send, Paperclip, Wrench, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import useAudioRecorder from '@/hooks/useAudioRecorder'
-import { Sidebar, type AppView } from '@/components/layout/Sidebar'
+import { AppLayout, type AppView } from '@/components/layout/AppLayout'
 import {
   loadChats,
   saveChats,
@@ -26,6 +26,7 @@ interface Message {
   content: string
   type: 'human' | 'system' | 'ai'
   timestamp: Date
+  audioData?: string
 }
 
 interface ChatLayoutProps {
@@ -106,6 +107,7 @@ export default function ChatLayout({ currentView, onNavigate }: ChatLayoutProps)
             typeof message.timestamp === 'string'
               ? message.timestamp
               : message.timestamp.toISOString(),
+          ...(message.audioData && { audioData: message.audioData }),
         }
         const updated: Chat = {
           ...chat,
@@ -224,148 +226,158 @@ export default function ChatLayout({ currentView, onNavigate }: ChatLayoutProps)
   }, [inputMessage, currentChatId])
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden font-sans">
-      <Sidebar
-        currentView={currentView}
-        onNavigate={onNavigate}
-        isConnected={isConnected}
-        chats={chats}
-        currentChatId={currentChatId}
-        onNewChat={handleNewChat}
-        onSelectChat={handleSelectChat}
-      />
+    <AppLayout
+      currentView={currentView}
+      onNavigate={onNavigate}
+      isConnected={isConnected}
+      chats={chats}
+      currentChatId={currentChatId}
+      onSelectChat={handleSelectChat}
+      onNewChat={handleNewChat}
+    >
+      <header className="h-12 shrink-0 border-b flex items-center px-6 justify-between gap-4 bg-background/50 backdrop-blur sticky top-0 z-10">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <h1 className="font-semibold text-sm truncate shrink-0">
+            {currentChat?.title ?? 'New Chat'}
+          </h1>
+          <SelectionPanel
+            compact
+            onMcpChange={refreshSelection}
+            onSkillChange={refreshSelection}
+          />
+        </div>
+      </header>
 
-      <main className="flex-1 flex flex-col min-w-0 bg-background">
-        <header className="h-14 border-b flex items-center px-6 justify-between gap-4 bg-background/50 backdrop-blur sticky top-0 z-10">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <h1 className="font-semibold text-sm truncate shrink-0">
-              {currentChat?.title ?? 'New Chat'}
-            </h1>
-            <SelectionPanel
-              compact
-              onMcpChange={refreshSelection}
-              onSkillChange={refreshSelection}
-            />
-          </div>
-          <Button variant="ghost" size="icon" className="shrink-0">
-            <MoreVertical className="w-5 h-5" />
-          </Button>
-        </header>
-
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-6 max-w-3xl mx-auto py-4">
-            {messages.map((msg) => (
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-6 max-w-3xl mx-auto py-4">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={cn(
+                'flex flex-col max-w-[85%]',
+                msg.type === 'human' ? 'ml-auto items-end' : 'mr-auto items-start'
+              )}
+            >
+              <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider font-semibold ml-1">
+                {msg.type}
+              </div>
               <div
-                key={msg.id}
                 className={cn(
-                  'flex flex-col max-w-[85%]',
-                  msg.type === 'human' ? 'ml-auto items-end' : 'mr-auto items-start'
+                  'px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm',
+                  msg.type === 'human'
+                    ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                    : msg.type === 'system'
+                      ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-100'
+                      : 'bg-muted rounded-tl-sm'
                 )}
               >
-                <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider font-semibold ml-1">
-                  {msg.type}
-                </div>
-                <div
-                  className={cn(
-                    'px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm',
-                    msg.type === 'human'
-                      ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                      : msg.type === 'system'
-                        ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-100'
-                        : 'bg-muted rounded-tl-sm'
-                  )}
-                >
-                  {msg.content}
-                </div>
+                {msg.audioData && (
+                  <audio
+                    controls
+                    src={msg.audioData}
+                    className="w-full max-w-xs mb-2"
+                  />
+                )}
+                {msg.content}
               </div>
-            ))}
-            <div ref={scrollRef} />
-          </div>
-        </ScrollArea>
+            </div>
+          ))}
+          <div ref={scrollRef} />
+        </div>
+      </ScrollArea>
 
-        <div className="p-4 border-t bg-background">
-          <div className="max-w-3xl mx-auto flex flex-col gap-2">
-            <div className="relative flex items-end gap-2 p-2 rounded-xl border bg-muted/30 focus-within:ring-1 ring-ring transition-all">
-              {mcpSelection && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 h-9 w-9 rounded-full self-end mb-0.5 text-muted-foreground hover:text-foreground"
-                  onClick={handleCallTool}
-                  disabled={isCallingTool}
-                  title={`Call ${mcpSelection.tool.name}`}
-                >
-                  {isCallingTool ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Wrench className="w-5 h-5" />
-                  )}
-                </Button>
-              )}
+      <div className="p-4 border-t bg-background">
+        <div className="max-w-3xl mx-auto flex flex-col gap-2">
+          <div className="relative flex items-end gap-2 p-2 rounded-xl border bg-muted/30 focus-within:ring-1 ring-ring transition-all">
+            {mcpSelection && (
               <Button
                 variant="ghost"
                 size="icon"
                 className="shrink-0 h-9 w-9 rounded-full self-end mb-0.5 text-muted-foreground hover:text-foreground"
+                onClick={handleCallTool}
+                disabled={isCallingTool}
+                title={`Call ${mcpSelection.tool.name}`}
               >
-                <Paperclip className="w-5 h-5" />
+                {isCallingTool ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Wrench className="w-5 h-5" />
+                )}
               </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0 h-9 w-9 rounded-full self-end mb-0.5 text-muted-foreground hover:text-foreground"
+            >
+              <Paperclip className="w-5 h-5" />
+            </Button>
 
-              <Input
-                value={inputMessage}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setInputMessage(e.target.value)
-                }
-                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                  e.key === 'Enter' && !e.shiftKey && handleSendMessage()
-                }
-                placeholder="Message AI Utils..."
-                className="border-0 shadow-none focus-visible:ring-0 bg-transparent px-2 py-2.5 h-auto min-h-[44px] max-h-[200px] flex-1"
-              />
+            <Input
+              value={inputMessage}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setInputMessage(e.target.value)
+              }
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                e.key === 'Enter' && !e.shiftKey && handleSendMessage()
+              }
+              placeholder="Message AI Utils..."
+              className="border-0 shadow-none focus-visible:ring-0 bg-transparent px-2 py-2.5 h-auto min-h-[44px] max-h-[200px] flex-1"
+            />
 
-              <div className="flex items-center gap-1 self-end mb-0.5">
-                <Button
-                  size="icon"
-                  variant={isRecording ? 'destructive' : 'ghost'}
-                  className={cn(
-                    'h-8 w-8 rounded-full text-muted-foreground hover:text-foreground',
-                    isRecording && 'animate-pulse'
-                  )}
-                  onClick={async () => {
-                    if (isRecording) {
-                      const audioBlob = await stopRecording()
-                      socket.emit('send_message', {
-                        roomId: currentChatId,
-                        message: `[Audio Message: ${Math.round(audioBlob.size / 1024)} KB]`,
-                        type: 'human',
-                      })
-                    } else {
-                      startRecording()
-                    }
-                  }}
-                >
-                  <Mic className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  className={cn(
-                    'h-8 w-8 rounded-full transition-all',
-                    inputMessage.trim()
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
-                  )}
-                  onClick={handleSendMessage}
-                  disabled={!inputMessage.trim()}
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-            <div className="text-[10px] text-center text-muted-foreground">
-              AI Utils can make mistakes. Consider checking important information.
+            <div className="flex items-center gap-1 self-end mb-0.5">
+              <Button
+                size="icon"
+                variant={isRecording ? 'destructive' : 'ghost'}
+                className={cn(
+                  'h-8 w-8 rounded-full text-muted-foreground hover:text-foreground',
+                  isRecording && 'animate-pulse'
+                )}
+                onClick={async () => {
+                  if (isRecording) {
+                    const { transcript, audioBlob } = await stopRecording()
+                    const content = transcript || '[Audio message – no speech detected]'
+                    const audioData =
+                      audioBlob.size > 0
+                        ? await new Promise<string>((res) => {
+                          const r = new FileReader()
+                          r.onloadend = () => res(r.result as string)
+                          r.readAsDataURL(audioBlob)
+                        })
+                        : undefined
+                    socket.emit('send_message', {
+                      roomId: currentChatId,
+                      message: content,
+                      type: 'human',
+                      ...(audioData && { audioData }),
+                    })
+                  } else {
+                    startRecording()
+                  }
+                }}
+              >
+                <Mic className="w-4 h-4" />
+              </Button>
+              <Button
+                size="icon"
+                className={cn(
+                  'h-8 w-8 rounded-full transition-all',
+                  inputMessage.trim()
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+                )}
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim()}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
             </div>
           </div>
+          <div className="text-[10px] text-center text-muted-foreground">
+            AI Utils can make mistakes. Consider checking important information.
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   )
 }

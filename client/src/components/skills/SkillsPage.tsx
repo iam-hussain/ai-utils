@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Sidebar, type AppView } from '@/components/layout/Sidebar'
+import { AppLayout, type AppView } from '@/components/layout/AppLayout'
 import {
   loadSkills,
   saveSkills,
@@ -130,13 +130,10 @@ export default function SkillsPage({ currentView, onNavigate }: SkillsPageProps)
   const editingOrAdding = editingId !== null || isAdding
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden font-sans">
-      <Sidebar currentView={currentView} onNavigate={onNavigate} isConnected={isConnected} />
-
-      <main className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
-        <header className="h-14 border-b flex items-center px-6 bg-background/50 backdrop-blur sticky top-0 z-10">
-          <h1 className="font-semibold text-sm">Skills</h1>
-        </header>
+    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected}>
+      <header className="h-12 shrink-0 border-b flex items-center px-6 bg-background/50 backdrop-blur sticky top-0 z-10">
+        <h1 className="font-semibold text-sm">Skills</h1>
+      </header>
 
         <ScrollArea className="flex-1">
           <div className="max-w-3xl mx-auto p-6 space-y-6">
@@ -268,7 +265,6 @@ export default function SkillsPage({ currentView, onNavigate }: SkillsPageProps)
             </Card>
           </div>
         </ScrollArea>
-      </main>
-    </div>
+    </AppLayout>
   )
 }

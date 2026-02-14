@@ -3,6 +3,7 @@ export interface ChatMessage {
   content: string
   type: 'human' | 'system' | 'ai'
   timestamp: string
+  audioData?: string
 }
 
 export interface Chat {

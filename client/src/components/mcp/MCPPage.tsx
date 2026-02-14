@@ -3,7 +3,7 @@ import { socket } from '@/lib/socket'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Sidebar, type AppView } from '@/components/layout/Sidebar'
+import { AppLayout, type AppView } from '@/components/layout/AppLayout'
 import {
   loadMCPServers,
   saveMCPServers,
@@ -150,13 +150,10 @@ export default function MCPPage({
   }, [importJson])
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden font-sans">
-      <Sidebar currentView={currentView} onNavigate={onNavigate} isConnected={isConnected} />
-
-      <main className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
-        <header className="h-14 border-b flex items-center px-6 bg-background/50 backdrop-blur sticky top-0 z-10">
-          <h1 className="font-semibold text-sm">MCP Server</h1>
-        </header>
+    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected}>
+      <header className="h-12 shrink-0 border-b flex items-center px-6 bg-background/50 backdrop-blur sticky top-0 z-10">
+        <h1 className="font-semibold text-sm">MCP Server</h1>
+      </header>
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-2xl mx-auto space-y-6">
@@ -339,7 +336,6 @@ export default function MCPPage({
             )}
           </div>
         </div>
-      </main>
-    </div>
+    </AppLayout>
   )
 }

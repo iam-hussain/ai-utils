@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Sidebar, type AppView } from '@/components/layout/Sidebar'
+import { AppLayout, type AppView } from '@/components/layout/AppLayout'
 import { socket } from '@/lib/socket'
 import {
   loadSavedPromptSets,
@@ -60,13 +60,10 @@ export default function SavedPromptsPage({
   }
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden font-sans">
-      <Sidebar currentView={currentView} onNavigate={onNavigate} isConnected={isConnected} />
-
-      <main className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
-        <header className="h-14 border-b flex items-center px-6 bg-background/50 backdrop-blur sticky top-0 z-10">
-          <h1 className="font-semibold text-sm">Saved prompts</h1>
-        </header>
+    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected}>
+      <header className="h-12 shrink-0 border-b flex items-center px-6 bg-background/50 backdrop-blur sticky top-0 z-10">
+        <h1 className="font-semibold text-sm">Saved prompts</h1>
+      </header>
 
         <ScrollArea className="flex-1">
           <div className="max-w-3xl mx-auto p-6">
@@ -147,7 +144,6 @@ export default function SavedPromptsPage({
             </Card>
           </div>
         </ScrollArea>
-      </main>
-    </div>
+    </AppLayout>
   )
 }

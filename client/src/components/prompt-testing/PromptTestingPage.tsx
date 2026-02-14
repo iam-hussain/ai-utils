@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { socket } from '@/lib/socket'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Sidebar, type AppView } from '@/components/layout/Sidebar'
+import { AppLayout, type AppView } from '@/components/layout/AppLayout'
 import {
   loadSavedPromptSets,
   saveSavedPromptSets,
@@ -221,11 +221,12 @@ export default function PromptTestingPage({
   }, [messages, onNavigate])
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden font-sans">
-      <Sidebar currentView={currentView} onNavigate={onNavigate} isConnected={isConnected} />
-
-      <main className="flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
-        <header className="h-14 border-b flex items-center justify-between gap-4 px-6 bg-background/50 backdrop-blur sticky top-0 z-10">
+    <AppLayout
+      currentView={currentView}
+      onNavigate={onNavigate}
+      isConnected={isConnected}
+    >
+      <header className="h-12 shrink-0 border-b flex items-center justify-between gap-4 px-6 bg-background/50 backdrop-blur sticky top-0 z-10">
           <h1 className="font-semibold text-sm shrink-0">Prompt Testing</h1>
           <SelectionPanel onMcpChange={refreshSelection} onSkillChange={refreshSelection} />
         </header>
@@ -413,7 +414,6 @@ export default function PromptTestingPage({
             </div>
           </div>
         </div>
-      </main>
-    </div>
+    </AppLayout>
   )
 }

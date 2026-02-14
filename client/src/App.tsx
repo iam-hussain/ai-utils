@@ -5,7 +5,7 @@ import SavedPromptsPage from '@/components/saved-prompts/SavedPromptsPage'
 import MCPPage from '@/components/mcp/MCPPage'
 import MCPSavedPage from '@/components/mcp/MCPSavedPage'
 import SkillsPage from '@/components/skills/SkillsPage'
-import type { AppView } from '@/components/layout/Sidebar'
+import type { AppView } from '@/components/layout/AppLayout'
 
 function App() {
   const [view, setView] = useState<AppView>('chat')
