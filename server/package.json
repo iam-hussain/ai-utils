@@ -1,0 +1,38 @@
+{
+  "name": "ai-utils-server",
+  "version": "1.0.0",
+  "description": "Backend for AI Utils",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "@langchain/core": "^0.1.63",
+    "@langchain/langgraph": "^0.0.12",
+    "@langchain/openai": "^0.0.14",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "langchain": "^0.0.186",
+    "mongoose": "^7.8.9",
+    "openai": "^4.104.0",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.8.7",
+    "@typescript-eslint/eslint-plugin": "^8.55.0",
+    "@typescript-eslint/parser": "^8.55.0",
+    "eslint": "^9.39.2",
+    "globals": "^17.3.0",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2",
+    "typescript-eslint": "^8.55.0"
+  }
+}
