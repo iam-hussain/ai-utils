@@ -35,10 +35,13 @@ import setupChatSockets from './sockets/chat';
 // Socket.io Connection
 setupChatSockets(io);
 
-// API Routes (Placeholder)
+// API Routes
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Server is running' });
 });
+
+import mcpRouter from './routes/mcp';
+app.use('/api/mcp', mcpRouter);
 
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
