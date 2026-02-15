@@ -16,6 +16,8 @@ interface AppLayoutProps {
   currentChatId?: string | null
   onSelectChat?: (id: string) => void
   onNewChat?: () => void
+  onDeleteChat?: (id: string) => void
+  onClearAllHistory?: () => void
 }
 
 export function AppLayout({
@@ -29,11 +31,13 @@ export function AppLayout({
   currentChatId,
   onSelectChat,
   onNewChat,
+  onDeleteChat,
+  onClearAllHistory,
 }: AppLayoutProps) {
   const showChatHistory = currentView === 'chat' && onSelectChat && onNewChat
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background overflow-hidden font-sans">
+    <div className="flex flex-col h-dvh h-screen min-h-0 w-full max-w-full bg-background overflow-hidden font-sans">
       <TopBar
         title={title}
         isConnected={isConnected}
@@ -52,12 +56,16 @@ export function AppLayout({
           onNavigate={onNavigate}
         />
         {showChatHistory && (
-          <ChatHistorySidebar
-            chats={chats}
-            currentChatId={currentChatId ?? null}
-            onSelectChat={onSelectChat}
-            onNewChat={onNewChat}
-          />
+          <div className="hidden md:flex shrink-0">
+            <ChatHistorySidebar
+              chats={chats}
+              currentChatId={currentChatId ?? null}
+              onSelectChat={onSelectChat}
+              onNewChat={onNewChat}
+              onDeleteChat={onDeleteChat}
+              onClearAllHistory={onClearAllHistory}
+            />
+          </div>
         )}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {children}

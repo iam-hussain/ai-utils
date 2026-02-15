@@ -1,4 +1,6 @@
 import { Router } from 'express'
+import { mcpCallToolSchema, mcpConnectSchema } from '../lib/schemas'
+import { logger } from '../lib/logger'
 
 const router = Router()
 
@@ -99,25 +101,18 @@ async function getConnectedClient(
 
 router.post('/call-tool', async (req, res) => {
   try {
-    const body = req.body as {
-      url?: string
-      command?: string
-      args?: string[]
-      toolName: string
-      toolArgs?: Record<string, unknown>
-    }
-
-    if (!body.toolName || typeof body.toolName !== 'string') {
-      res.status(400).json({ error: 'toolName is required' })
+    const parsed = mcpCallToolSchema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() })
       return
     }
+    const body = parsed.data
 
     let clientAndTransport: Awaited<ReturnType<typeof getConnectedClient>>
-    if (body.url && typeof body.url === 'string') {
+    if (body.url) {
       clientAndTransport = await getConnectedClient({ url: body.url })
-    } else if (body.command && typeof body.command === 'string' && Array.isArray(body.args)) {
-      const args = body.args.filter((a): a is string => typeof a === 'string')
-      clientAndTransport = await getConnectedClient({ command: body.command, args })
+    } else if (body.command && body.args) {
+      clientAndTransport = await getConnectedClient({ command: body.command, args: body.args })
     } else {
       res.status(400).json({ error: 'Provide either url or command+args' })
       return
@@ -133,7 +128,7 @@ router.post('/call-tool', async (req, res) => {
       await clientAndTransport.transport.close()
     }
   } catch (err) {
-    console.error('MCP call-tool error:', err)
+    logger.error('MCP call-tool error', { error: err })
     const message = err instanceof Error ? err.message : 'Failed to call tool'
     res.status(500).json({ error: message })
   }
@@ -141,18 +136,23 @@ router.post('/call-tool', async (req, res) => {
 
 router.post('/connect', async (req, res) => {
   try {
-    const body = req.body as { url?: string; command?: string; args?: string[] }
+    const parsed = mcpConnectSchema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() })
+      return
+    }
+    const body = parsed.data
 
-    if (body.url && typeof body.url === 'string') {
-      const url = body.url.trim()
-      let parsed: URL
+    if (body.url) {
+      const url = body.url
+      let parsedUrl: URL
       try {
-        parsed = new URL(url)
+        parsedUrl = new URL(url)
       } catch {
         res.status(400).json({ error: 'Invalid URL format' })
         return
       }
-      if (!['http:', 'https:'].includes(parsed.protocol)) {
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
         res.status(400).json({ error: 'URL must use http or https' })
         return
       }
@@ -161,9 +161,9 @@ router.post('/connect', async (req, res) => {
       return
     }
 
-    if (body.command && typeof body.command === 'string' && Array.isArray(body.args)) {
-      const command = body.command.trim()
-      const args = body.args.filter((a): a is string => typeof a === 'string')
+    if (body.command && body.args) {
+      const command = body.command
+      const args = body.args
       if (!command) {
         res.status(400).json({ error: 'Command is required' })
         return
@@ -177,7 +177,7 @@ router.post('/connect', async (req, res) => {
       error: 'Provide either { url: string } or { command: string, args: string[] }',
     })
   } catch (err) {
-    console.error('MCP connect error:', err)
+    logger.error('MCP connect error', { error: err })
     const message = err instanceof Error ? err.message : 'Failed to connect to MCP server'
     res.status(500).json({ error: message })
   }

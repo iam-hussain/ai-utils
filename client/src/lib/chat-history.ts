@@ -31,6 +31,29 @@ export function saveChats(chats: Chat[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(chats))
 }
 
+/** Load chats from server if available, else from localStorage */
+export async function loadChatsFromServer(): Promise<Chat[]> {
+  try {
+    const { fetchChats } = await import('./chat-api')
+    return await fetchChats()
+  } catch {
+    return loadChats()
+  }
+}
+
+let syncTimeout: ReturnType<typeof setTimeout> | null = null
+
+/** Persist chats to server (fire-and-forget, debounced) */
+export function syncChatsToServer(chats: Chat[]): void {
+  if (syncTimeout) clearTimeout(syncTimeout)
+  syncTimeout = setTimeout(() => {
+    syncTimeout = null
+    import('./chat-api').then(({ upsertChat }) => {
+      chats.forEach((chat) => upsertChat(chat).catch(() => {}))
+    }).catch(() => {})
+  }, 500)
+}
+
 export function createChat(): Chat {
   const now = Date.now()
   return {

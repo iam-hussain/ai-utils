@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.PROD ? '' : 'http://localhost:3000'
+import { apiConfig } from './api'
+
+const { baseUrl } = apiConfig
 
 export interface CallToolPayload {
   url?: string
@@ -14,8 +16,9 @@ export interface CallToolResult {
 }
 
 export async function callMCPTool(payload: CallToolPayload): Promise<CallToolResult> {
-  const res = await fetch(`${API_BASE}/api/mcp/call-tool`, {
+  const res = await fetch(`${baseUrl}/api/mcp/call-tool`, {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })

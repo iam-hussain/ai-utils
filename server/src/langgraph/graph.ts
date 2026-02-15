@@ -1,41 +1,35 @@
-import { ChatOpenAI } from "@langchain/openai";
-import { HumanMessage, BaseMessage } from "@langchain/core/messages";
-import { StateGraph, StateGraphArgs, END } from "@langchain/langgraph";
+import { BaseMessage } from '@langchain/core/messages'
+import { StateGraph, END } from '@langchain/langgraph'
+import { getModel, type LLMProvider } from '../services/llm-service'
 
-// Define the state interface
 interface AgentState {
-    messages: BaseMessage[];
+  messages: BaseMessage[]
 }
 
-// Initialize the model
-const model = new ChatOpenAI({
-    modelName: "gpt-3.5-turbo",
-    temperature: 0,
-});
-
-// Define the function that calls the model
-async function callModel(state: AgentState) {
-    const messages = state.messages;
-    const response = await model.invoke(messages);
-    return { messages: [response] };
+function createCallModel(provider: LLMProvider) {
+  return async function callModel(state: AgentState) {
+    const messages = state.messages
+    const model = getModel(provider)
+    const response = await model.invoke(messages)
+    return { messages: [response] }
+  }
 }
 
-// Define the graph
-const workflow = new StateGraph<AgentState>({
+export function createGraph(provider: LLMProvider = 'openai') {
+  const workflow = new StateGraph<AgentState>({
     channels: {
-        messages: {
-            value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
-            default: () => [],
-        },
+      messages: {
+        value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
+        default: () => [],
+      },
     },
-});
+  })
+  workflow.addNode('agent', createCallModel(provider))
+  workflow.setEntryPoint('agent')
+  workflow.addEdge('agent', END)
+  return workflow.compile()
+}
 
-// Add nodes
-workflow.addNode("agent", callModel);
-
-// Set entry point
-workflow.setEntryPoint("agent");
-workflow.addEdge("agent", END);
-
-// Compile the graph
-export const graph = workflow.compile();
+export const graph = createGraph('openai')
+export { getModel } from '../services/llm-service'
+export type { LLMProvider } from '../services/llm-service'
