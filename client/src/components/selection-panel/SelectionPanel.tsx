@@ -1,6 +1,5 @@
-import { loadMCPSelection, clearMCPSelection } from '@/lib/mcp-selection'
-import { loadSkills, type Skill } from '@/lib/skills'
-import { getSelectedSkills, clearSkillSelection } from '@/lib/skill-selection'
+import { useUserData } from '@/contexts/UserDataContext'
+import type { Skill } from '@/lib/skills'
 import { FileCode, Plug } from 'lucide-react'
 
 interface SelectionPanelProps {
@@ -14,9 +13,8 @@ export function SelectionPanel({
   onSkillChange,
   compact = false,
 }: SelectionPanelProps) {
-  const mcp = loadMCPSelection()
-  const skills = loadSkills()
-  const selectedSkills = getSelectedSkills(skills)
+  const { mcpSelection: mcp, skills, skillSelection, updateMCPSelection, updateSkillSelection } = useUserData()
+  const selectedSkills = skills.filter((s: Skill) => skillSelection.includes(s.id))
 
   const hasAny = mcp != null || selectedSkills.length > 0
 
@@ -35,7 +33,7 @@ export function SelectionPanel({
           <button
             type="button"
             onClick={() => {
-              clearMCPSelection()
+              updateMCPSelection(null)
               onMcpChange?.()
             }}
             className="text-muted-foreground hover:text-foreground underline"
@@ -53,7 +51,7 @@ export function SelectionPanel({
           <button
             type="button"
             onClick={() => {
-              clearSkillSelection()
+              updateSkillSelection([])
               onSkillChange?.()
             }}
             className="text-muted-foreground hover:text-foreground underline ml-0.5"

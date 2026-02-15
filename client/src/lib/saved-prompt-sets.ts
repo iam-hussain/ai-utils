@@ -16,6 +16,45 @@ export interface SavedPromptSet {
   createdAt: number
 }
 
+export interface SavedPromptSetCategory {
+  id: string
+  name: string
+  sets: SavedPromptSet[]
+  createdAt: number
+  updatedAt: number
+}
+
+export function createSavedPromptSetCategory(name: string): SavedPromptSetCategory {
+  const now = Date.now()
+  return {
+    id: `cat-${now}`,
+    name,
+    sets: [],
+    createdAt: now,
+    updatedAt: now,
+  }
+}
+
+/** Flatten categories to a single array of sets (for backward compat / migration) */
+export function flattenCategories(categories: SavedPromptSetCategory[]): SavedPromptSet[] {
+  return categories.flatMap((c) => c.sets)
+}
+
+/** Convert flat array to single default category (migration) */
+export function flatToCategories(sets: SavedPromptSet[]): SavedPromptSetCategory[] {
+  if (sets.length === 0) return [createSavedPromptSetCategory('General')]
+  const now = Date.now()
+  return [
+    {
+      id: `cat-${now}`,
+      name: 'General',
+      sets,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]
+}
+
 const STORAGE_KEY = 'ai-utils-saved-prompt-sets'
 const LOAD_KEY = 'ai-utils-load-prompt-set'
 

@@ -1,9 +1,8 @@
-import { io } from 'socket.io-client';
+import { io } from 'socket.io-client'
+import { apiConfig } from './api'
 
-// In production, this should point to the actual server URL
-// In development with Vite proxy, it can be just "/" or "http://localhost:3000"
-const URL = import.meta.env.PROD ? '/' : 'http://localhost:3000';
+const socketUrl = apiConfig.baseUrl || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
 
-export const socket = io(URL, {
+export const socket = io(socketUrl, {
     autoConnect: false,
 });

@@ -4,13 +4,16 @@ import {
   MessageSquare,
   FlaskConical,
   FolderOpen,
+  Library,
   Plug,
   PlugZap,
   FileCode,
   ChevronRight,
+  Users,
+  Workflow,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-export type AppView = 'chat' | 'prompts' | 'saved' | 'mcp' | 'mcp-saved' | 'skills'
+export type AppView = 'chat' | 'prompts' | 'saved' | 'prompt-library' | 'mcp' | 'mcp-saved' | 'skills' | 'teams' | 'agent-architect'
 
 interface SidebarProps {
   currentView: AppView
@@ -31,6 +34,14 @@ const NAV_GROUPS = [
     items: [
       { id: 'prompts' as const, label: 'Prompt Testing', icon: FlaskConical },
       { id: 'saved' as const, label: 'Saved prompts', icon: FolderOpen },
+      { id: 'prompt-library' as const, label: 'Prompt Library', icon: Library },
+    ],
+  },
+  {
+    label: 'Team',
+    items: [
+      { id: 'teams' as const, label: 'Teams', icon: Users },
+      { id: 'agent-architect' as const, label: 'Nexus Architect', icon: Workflow },
     ],
   },
   {

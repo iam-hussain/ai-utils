@@ -7,8 +7,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { Settings, Wifi, WifiOff, Menu } from 'lucide-react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { SettingsSheet } from '@/components/settings/SettingsSheet'
+import { Settings, Wifi, WifiOff, Menu, Sun, Moon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface TopBarProps {
   title?: string
@@ -17,11 +21,25 @@ interface TopBarProps {
   sidebarContent?: React.ReactNode
 }
 
+function getInitials(email: string, name?: string): string {
+  if (name?.trim()) {
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 2) return (parts[0]![0]! + parts[1]![0]!).toUpperCase()
+    return name.slice(0, 2).toUpperCase()
+  }
+  const local = email.split('@')[0]
+  return local ? local.slice(0, 2).toUpperCase() : '?'
+}
+
 export function TopBar({ title, isConnected, actions, sidebarContent }: TopBarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const { user } = useAuth()
+  const { theme, toggleTheme } = useTheme()
+  const displayName = user?.name?.trim() || user?.email || ''
 
   return (
-    <header className="h-12 shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center px-4 gap-4 z-20">
+    <header className="h-12 shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center px-4 sm:px-6 gap-2 sm:gap-4 z-20 pt-[env(safe-area-inset-top)]">
       <div className="flex items-center gap-2 min-w-0">
         {sidebarContent && (
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -46,6 +64,19 @@ export function TopBar({ title, isConnected, actions, sidebarContent }: TopBarPr
       </div>
       <div className="flex-1 min-w-0" />
       <div className="flex items-center gap-2 shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-4 h-4" />
+          ) : (
+            <Moon className="w-4 h-4" />
+          )}
+        </Button>
         {actions}
         <div
           className={cn(
@@ -63,9 +94,37 @@ export function TopBar({ title, isConnected, actions, sidebarContent }: TopBarPr
           )}
           {isConnected ? 'Connected' : 'Offline'}
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Settings">
-          <Settings className="w-4 h-4" />
-        </Button>
+        {user && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 h-8 px-2 max-w-[140px]"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Open settings"
+          >
+            <Avatar className="h-6 w-6">
+              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                {getInitials(user.email, user.name)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate text-sm font-medium hidden sm:inline">
+              {displayName || user.email}
+            </span>
+            <Settings className="w-4 h-4 shrink-0 sm:hidden" />
+          </Button>
+        )}
+        {user && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 hidden sm:flex"
+            aria-label="Settings"
+            onClick={() => setSettingsOpen(true)}
+          >
+            <Settings className="w-4 h-4" />
+          </Button>
+        )}
+        <SettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     </header>
   )
