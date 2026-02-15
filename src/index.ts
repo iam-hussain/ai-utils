@@ -7,16 +7,16 @@ import cookieParser from 'cookie-parser'
 import rateLimit from 'express-rate-limit'
 import path from 'path'
 
-import { config } from './config'
-import { logger } from './lib/logger'
-import setupChatSockets from './sockets/chat'
-import authRouter from './routes/auth'
-import mcpRouter from './routes/mcp'
-import chatsRouter from './routes/chats'
-import userDataRouter from './routes/user-data'
-import teamsRouter from './routes/teams'
-import invitesRouter from './routes/invites'
-import agentRunsRouter from './routes/agent-runs'
+import { config } from '../config'
+import { logger } from '../lib/logger'
+import setupChatSockets from '../sockets/chat'
+import authRouter from '../routes/auth'
+import mcpRouter from '../routes/mcp'
+import chatsRouter from '../routes/chats'
+import userDataRouter from '../routes/user-data'
+import teamsRouter from '../routes/teams'
+import invitesRouter from '../routes/invites'
+import agentRunsRouter from '../routes/agent-runs'
 
 const corsOrigin =
   config.corsOrigins.length === 1 && config.corsOrigins[0] === '*'
@@ -80,9 +80,9 @@ app.use('/api/invites', invitesRouter)
 app.use('/api/agent-runs', agentRunsRouter)
 
 if (config.isProduction) {
-  app.use(express.static(path.join(__dirname, '../../client/dist')))
+  app.use(express.static(path.join(__dirname, '../frontend/dist')))
   app.get('*', (_req, res) => {
-    res.sendFile(path.join(__dirname, '../../client/dist/index.html'))
+    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'))
   })
 }
 

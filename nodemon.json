@@ -1,0 +1,5 @@
+{
+  "watch": ["src", "config", "lib", "routes", "models", "services", "langgraph", "sockets", "prompts"],
+  "ext": "ts,json",
+  "exec": "ts-node src/index.ts"
+}

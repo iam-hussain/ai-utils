@@ -1,13 +1,14 @@
 {
-  "name": "ai-utils-server",
+  "name": "ai-utils",
   "version": "1.0.0",
-  "description": "Backend for AI Utils",
-  "main": "dist/index.js",
+  "description": "Self-hosted API platform with React frontend",
+  "main": "dist/src/index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node dist/src/index.js",
     "dev": "nodemon src/index.ts",
-    "build": "tsc",
-    "lint": "eslint src/**/*.ts",
+    "build": "npm run build:frontend && tsc",
+    "build:frontend": "cd frontend && npm run build",
+    "lint": "eslint src config lib routes models services langgraph sockets prompts --ext .ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

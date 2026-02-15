@@ -1,7 +1,7 @@
 import path from 'path'
 import dotenv from 'dotenv'
 
-dotenv.config({ path: path.join(__dirname, '../../../.env') })
+dotenv.config({ path: path.join(__dirname, '../.env') })
 
 const isProduction = process.env.NODE_ENV === 'production'
 const jwtSecret = process.env.JWT_SECRET || (isProduction ? '' : 'dev-secret-change-in-production')
@@ -12,10 +12,10 @@ if (isProduction && !process.env.JWT_SECRET) {
 }
 
 export const config = {
-  port: Number(process.env.PORT) || 3000,
+  port: Number(process.env.PORT) || 3005,
   mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/ai-utils',
   nodeEnv: process.env.NODE_ENV || 'development',
-  corsOrigins: (process.env.CORS_ORIGIN ?? 'http://localhost:5173,http://localhost:3000')
+  corsOrigins: (process.env.CORS_ORIGIN ?? 'http://localhost:5173,http://localhost:3005')
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean),

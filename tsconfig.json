@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": ["es2020"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "."
+  },
+  "include": [
+    "src/**/*",
+    "config/**/*",
+    "lib/**/*",
+    "routes/**/*",
+    "models/**/*",
+    "services/**/*",
+    "langgraph/**/*",
+    "sockets/**/*",
+    "prompts/**/*"
+  ],
+  "exclude": ["node_modules", "frontend", "dist"]
+}
