@@ -1,4 +1,4 @@
-import { HumanMessage, SystemMessage, AIMessage } from '@langchain/core/messages'
+import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { META_AGENT_ARCHITECT_PROMPT, SUPERVISOR_AGENT_PROMPT } from '../prompts/meta-agent'
 import { AgentRun, type IAgentRun, type IAgentStep, type IAgentDefinition } from '../models/AgentRun'
 import { getModel, MODEL_NAMES, type LLMProvider } from './llm-service'

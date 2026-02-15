@@ -29,6 +29,7 @@ cp .env.example .env
 |----------|-------------|
 | `PORT` | Server port (default: 3005) |
 | `MONGODB_URI` | MongoDB connection string |
+| `JWT_SECRET` | Required in production for auth tokens |
 | `OPENAI_API_KEY` | Required for chat AI |
 | `OPENAI_MODEL` | Model name (default: gpt-3.5-turbo) |
 | `OPENAI_TEMPERATURE` | 0–1 (default: 0) |

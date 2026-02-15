@@ -8,7 +8,7 @@
     "dev": "nodemon src/index.ts",
     "build": "npm run build:frontend && tsc",
     "build:frontend": "cd frontend && npm run build",
-    "lint": "eslint src config lib routes models services langgraph sockets prompts --ext .ts",
+    "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest"
   },
