@@ -8,7 +8,7 @@ import { getPromptFromLibrary } from '@/lib/prompt-library-load'
 import { useUserData } from '@/contexts/UserDataContext'
 import type { Skill } from '@/lib/skills'
 import { callMCPTool } from '@/lib/mcp-api'
-import { SelectionPanel } from '@/components/selection-panel/SelectionPanel'
+import { ToolsSkillsPicker } from './ToolsSkillsPicker'
 import {
   Select,
   SelectContent,
@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Play, Save, Trash2, Plus, Loader2, Wrench, RotateCcw } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
 import { SaveSetDialog } from './SaveSetDialog'
 import { useConfirm } from '@/contexts/ConfirmContext'
 import { cn } from '@/lib/utils'
@@ -251,7 +252,7 @@ export default function PromptTestingPage({
             </SelectContent>
           </Select>
           <div className="hidden sm:block">
-            <SelectionPanel onMcpChange={refreshSelection} onSkillChange={refreshSelection} />
+            <ToolsSkillsPicker onNavigate={onNavigate} />
           </div>
         </div>
       </header>
@@ -361,63 +362,80 @@ export default function PromptTestingPage({
                   </ul>
                 </div>
 
-                <div className="flex flex-wrap gap-2 shrink-0 items-center min-h-[44px]">
-                  <SelectionPanel
-                    compact
-                    onMcpChange={refreshSelection}
-                    onSkillChange={refreshSelection}
-                  />
-                  <Button
-                    onClick={handleTest}
-                    disabled={
-                      isTesting ||
-                      !messages.some((m) => m.content.trim().length > 0)
-                    }
-                    className="gap-2"
-                  >
-                    {isTesting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Play className="w-4 h-4" />
-                    )}
-                    Test prompt
-                  </Button>
-                  {mcpSelection && (
-                    <Button
-                      variant="outline"
-                      onClick={handleCallTool}
-                      disabled={isCallingTool}
-                      className="gap-2"
-                    >
-                      {isCallingTool ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Wrench className="w-4 h-4" />
+                <div className="flex flex-col gap-3 shrink-0 pt-2 px-4 py-3 rounded-lg bg-muted/40 border border-border/60">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    {/* Context: tools & skills */}
+                    <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
+                      <ToolsSkillsPicker compact onNavigate={onNavigate} />
+                    </div>
+
+                    <Separator orientation="vertical" className="h-5 hidden sm:block flex-shrink-0" />
+
+                    {/* Primary actions */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button
+                        onClick={handleTest}
+                        disabled={
+                          isTesting ||
+                          !messages.some((m) => m.content.trim().length > 0)
+                        }
+                        size="sm"
+                        className="gap-1.5 font-medium"
+                      >
+                        {isTesting ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Play className="w-4 h-4" />
+                        )}
+                        Test prompt
+                      </Button>
+                      {mcpSelection && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCallTool}
+                          disabled={isCallingTool}
+                          className="gap-1.5"
+                        >
+                          {isCallingTool ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Wrench className="w-4 h-4" />
+                          )}
+                          Call tool
+                        </Button>
                       )}
-                      Call tool
-                    </Button>
-                  )}
-                  <Button
-                    variant="secondary"
-                    onClick={handleSaveClick}
-                    disabled={
-                      !messages.some((m) => m.content.trim().length > 0)
-                    }
-                    className="gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    Save set
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleReset}
-                    disabled={isTesting}
-                    className="gap-2 text-muted-foreground hover:text-destructive"
-                    title="Reset messages and test result"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    Reset
-                  </Button>
+                    </div>
+
+                    <Separator orientation="vertical" className="h-5 hidden sm:block flex-shrink-0" />
+
+                    {/* Secondary actions */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSaveClick}
+                        disabled={
+                          !messages.some((m) => m.content.trim().length > 0)
+                        }
+                        className="gap-1.5"
+                      >
+                        <Save className="w-4 h-4" />
+                        Save set
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleReset}
+                        disabled={isTesting}
+                        className="gap-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        title="Reset messages and test result"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        Reset
+                      </Button>
+                    </div>
+                  </div>
                   <SaveSetDialog
                     open={saveDialogOpen}
                     onOpenChange={setSaveDialogOpen}
