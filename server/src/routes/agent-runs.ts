@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express'
 import { AgentRun } from '../models/AgentRun'
 import { runAgentWorkflow } from '../services/agent-executor'
 import { runCriticOnRun } from '../services/critic-service'
-import { requireAuth } from '../lib/auth'
+import { requireAuth, getUserId } from '../lib/auth'
 import { logger } from '../lib/logger'
 
 const router = Router()
@@ -10,7 +10,7 @@ router.use(requireAuth)
 
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const runs = await AgentRun.find({ userId })
       .sort({ createdAt: -1 })
       .limit(50)
@@ -35,7 +35,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.get('/analytics', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const runs = await AgentRun.find({ userId, status: { $in: ['complete', 'failed'] } })
       .select('steps')
       .lean()
@@ -70,7 +70,7 @@ router.get('/analytics', async (req: Request, res: Response) => {
 
 router.get('/:id/ghosts', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const ghosts = await AgentRun.find({ ghostOfRunId: req.params.id, userId })
       .sort({ createdAt: -1 })
       .select('projectName status finalOutput error createdAt')
@@ -93,7 +93,7 @@ router.get('/:id/ghosts', async (req: Request, res: Response) => {
 
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const run = await AgentRun.findOne({ _id: req.params.id, userId }).lean()
     if (!run) {
       res.status(404).json({ error: 'Run not found' })
@@ -127,7 +127,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const { userGoal, llmProvider = 'openai' } = req.body ?? {}
     if (!userGoal || typeof userGoal !== 'string' || userGoal.trim().length === 0) {
       res.status(400).json({ error: 'userGoal is required' })
@@ -163,7 +163,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.post('/:id/ghost', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const { agentId, newPrompt } = req.body ?? {}
     const liveRun = await AgentRun.findOne({ _id: req.params.id, userId }).lean()
     if (!liveRun) {
@@ -203,7 +203,7 @@ router.post('/:id/ghost', async (req: Request, res: Response) => {
 
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const run = await AgentRun.findOneAndDelete({ _id: req.params.id, userId })
     if (!run) {
       res.status(404).json({ error: 'Run not found' })
@@ -218,7 +218,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
 router.patch('/:id', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const { projectName } = req.body ?? {}
     const run = await AgentRun.findOneAndUpdate(
       { _id: req.params.id, userId },
@@ -238,7 +238,7 @@ router.patch('/:id', async (req: Request, res: Response) => {
 
 router.post('/:id/generate-title', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const run = await AgentRun.findOne({ _id: req.params.id, userId })
     if (!run) {
       res.status(404).json({ error: 'Run not found' })
@@ -257,7 +257,7 @@ router.post('/:id/generate-title', async (req: Request, res: Response) => {
 
 router.post('/:id/design', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const run = await AgentRun.findOne({ _id: req.params.id, userId })
     if (!run) {
       res.status(404).json({ error: 'Run not found' })
@@ -284,7 +284,7 @@ router.post('/:id/design', async (req: Request, res: Response) => {
 
 router.patch('/:id/agent-definitions', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const { agentDefinitions } = req.body ?? {}
     if (!Array.isArray(agentDefinitions)) {
       res.status(400).json({ error: 'agentDefinitions array is required' })
@@ -325,7 +325,7 @@ router.patch('/:id/agent-definitions', async (req: Request, res: Response) => {
 
 router.post('/:id/run-critic', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const run = await runCriticOnRun(req.params.id, userId)
     if (!run) {
       res.status(404).json({ error: 'Run not found' })
@@ -343,7 +343,7 @@ router.post('/:id/run-critic', async (req: Request, res: Response) => {
 
 router.post('/:id/promote-ghost/:ghostId', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const liveRun = await AgentRun.findOne({ _id: req.params.id, userId })
     const ghostRun = await AgentRun.findOne({ _id: req.params.ghostId, userId }).lean()
     if (!liveRun || !ghostRun || ghostRun.ghostOfRunId?.toString() !== req.params.id) {
@@ -365,7 +365,7 @@ router.post('/:id/promote-ghost/:ghostId', async (req: Request, res: Response) =
 
 router.post('/:id/fork', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const { stepIndex, editedAgentId, editedPrompt } = req.body ?? {}
     const parentRun = await AgentRun.findOne({ _id: req.params.id, userId }).lean()
     if (!parentRun) {
@@ -412,7 +412,7 @@ router.post('/:id/fork', async (req: Request, res: Response) => {
 
 router.post('/:id/resume', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const { userHint } = req.body ?? {}
     const run = await AgentRun.findOne({ _id: req.params.id, userId })
     if (!run) {
@@ -443,7 +443,7 @@ router.post('/:id/resume', async (req: Request, res: Response) => {
 
 router.post('/:id/execute', async (req: Request, res: Response) => {
   try {
-    const userId = (req as Request & { user: { userId: string } }).user.userId
+    const userId = getUserId(req)
     const run = await AgentRun.findOne({ _id: req.params.id, userId })
     if (!run) {
       res.status(404).json({ error: 'Run not found' })

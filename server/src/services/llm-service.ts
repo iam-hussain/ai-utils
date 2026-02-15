@@ -44,20 +44,25 @@ function createCriticModel(): BaseChatModel {
   })
 }
 
+const modelCache = new Map<LLMProvider, BaseChatModel>()
+let criticModel: BaseChatModel | null = null
+
 export function getCriticModel(): BaseChatModel {
-  return createCriticModel()
+  if (!criticModel) criticModel = createCriticModel()
+  return criticModel
 }
 
 export function getModel(provider: LLMProvider = 'openai'): BaseChatModel {
-  switch (provider) {
-    case 'anthropic':
-      return createAnthropicModel()
-    case 'google':
-      return createGoogleModel()
-    case 'openai':
-    default:
-      return createOpenAIModel()
-  }
+  const cached = modelCache.get(provider)
+  if (cached) return cached
+  const model =
+    provider === 'anthropic'
+      ? createAnthropicModel()
+      : provider === 'google'
+        ? createGoogleModel()
+        : createOpenAIModel()
+  modelCache.set(provider, model)
+  return model
 }
 
 export const MODEL_NAMES: Record<LLMProvider, string> = {

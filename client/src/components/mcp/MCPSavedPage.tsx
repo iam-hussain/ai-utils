@@ -19,6 +19,7 @@ import {
   Server,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { apiUrl, apiConfig } from '@/lib/api'
 
 interface MCPTool {
   name: string
@@ -31,14 +32,12 @@ interface MCPConnectResult {
   serverInfo?: { name: string; version?: string }
 }
 
-const API_BASE = import.meta.env.PROD ? '' : 'http://localhost:3000'
-
 async function connect(
   payload: { command: string; args: string[] }
 ): Promise<MCPConnectResult> {
-  const res = await fetch(`${API_BASE}/api/mcp/connect`, {
+  const res = await fetch(apiUrl('/api/mcp/connect'), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    ...apiConfig.defaultOptions,
     body: JSON.stringify(payload),
   })
   const data = await res.json()

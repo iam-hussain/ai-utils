@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import type React from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserDataProvider } from '@/contexts/UserDataContext'
 import { ConfirmProvider } from '@/contexts/ConfirmContext'
@@ -13,6 +14,21 @@ import SkillsPage from '@/components/skills/SkillsPage'
 import TeamsPage from '@/components/teams/TeamsPage'
 import NexusArchitectPage from '@/components/nexus-architect/NexusArchitectPage'
 import type { AppView } from '@/components/layout/AppLayout'
+import { isNexusArchitectEnabled } from '@/lib/feature-flags'
+
+const ROUTE_MAP: Record<
+  Exclude<AppView, 'agent-architect'>,
+  React.ComponentType<{ currentView: AppView; onNavigate: (v: AppView) => void }>
+> = {
+  chat: ChatLayout,
+  prompts: PromptTestingPage,
+  saved: SavedPromptsPage,
+  'prompt-library': PromptLibraryPage,
+  mcp: MCPPage,
+  'mcp-saved': MCPSavedPage,
+  skills: SkillsPage,
+  teams: TeamsPage,
+}
 
 function App() {
   const { user, loading } = useAuth()
@@ -46,31 +62,21 @@ function AppContent({
   view: AppView
   setView: (v: AppView) => void
 }) {
-  if (view === 'chat') {
-    return <ChatLayout currentView={view} onNavigate={setView} />
-  }
-  if (view === 'saved') {
-    return <SavedPromptsPage currentView={view} onNavigate={setView} />
-  }
-  if (view === 'prompt-library') {
-    return <PromptLibraryPage currentView={view} onNavigate={setView} />
-  }
-  if (view === 'mcp') {
-    return <MCPPage currentView={view} onNavigate={setView} />
-  }
-  if (view === 'mcp-saved') {
-    return <MCPSavedPage currentView={view} onNavigate={setView} />
-  }
-  if (view === 'skills') {
-    return <SkillsPage currentView={view} onNavigate={setView} />
-  }
-  if (view === 'teams') {
-    return <TeamsPage currentView={view} onNavigate={setView} />
-  }
+  useEffect(() => {
+    if (view === 'agent-architect' && !isNexusArchitectEnabled) {
+      setView('chat')
+    }
+  }, [view, setView])
+
   if (view === 'agent-architect') {
+    if (!isNexusArchitectEnabled) {
+      return <ChatLayout currentView="chat" onNavigate={setView} />
+    }
     return <NexusArchitectPage currentView={view} onNavigate={setView} />
   }
-  return <PromptTestingPage currentView={view} onNavigate={setView} />
+
+  const Page = ROUTE_MAP[view] ?? PromptTestingPage
+  return <Page currentView={view} onNavigate={setView} />
 }
 
 export default App

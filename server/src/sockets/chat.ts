@@ -1,12 +1,48 @@
 import { Server, Socket } from 'socket.io'
 import { getModel } from '../services/llm-service'
-import { createGraph } from '../langgraph/graph'
+import { createGraph, type AgentState } from '../langgraph/graph'
 import { HumanMessage, SystemMessage, AIMessage, ToolMessage, FunctionMessage, ChatMessage } from '@langchain/core/messages'
 import type { BaseMessage } from '@langchain/core/messages'
 import { sendMessageSchema, testPromptMessageSchema } from '../lib/schemas'
 import { logger } from '../lib/logger'
+import { verifyToken } from '../lib/auth'
+
+function getTokenFromHandshake(socket: Socket): string | null {
+  const auth = socket.handshake.auth as { token?: string }
+  if (auth?.token) return auth.token
+  const cookie = socket.handshake.headers.cookie
+  const match = cookie?.match(/token=([^;]+)/)
+  return match?.[1]?.trim() ?? null
+}
+
+function toBaseMessage(m: { type: string; content: string; name?: string; role?: string }): BaseMessage {
+  switch (m.type) {
+    case 'human': return new HumanMessage(m.content)
+    case 'system': return new SystemMessage(m.content)
+    case 'ai': return new AIMessage(m.content)
+    case 'tool': return new ToolMessage({ content: m.content, tool_call_id: 'test-tool-call' })
+    case 'function': return new FunctionMessage({ content: m.content, name: m.name ?? 'function' })
+    case 'chat': return new ChatMessage(m.content, m.role ?? 'user')
+    default: return new HumanMessage(m.content)
+  }
+}
 
 export default function setupChatSockets(io: Server) {
+  io.use((socket, next) => {
+    const token = getTokenFromHandshake(socket)
+    if (!token) {
+      next(new Error('Authentication required'))
+      return
+    }
+    const payload = verifyToken(token)
+    if (!payload) {
+      next(new Error('Invalid or expired token'))
+      return
+    }
+    socket.data.userId = payload.userId
+    next()
+  })
+
   io.on('connection', (socket: Socket) => {
     logger.info('User connected', { socketId: socket.id })
 
@@ -91,29 +127,21 @@ export default function setupChatSockets(io: Server) {
         const graph = createGraph(provider)
         let messageList: BaseMessage[]
         const d = parsed.data
-        if (d.messages && d.messages.length > 0) {
-          messageList = d.messages.map((m) => {
-            switch (m.type) {
-              case 'human': return new HumanMessage(m.content)
-              case 'system': return new SystemMessage(m.content)
-              case 'ai': return new AIMessage(m.content)
-              case 'tool': return new ToolMessage({ content: m.content, tool_call_id: 'test-tool-call' })
-              case 'function': return new FunctionMessage({ content: m.content, name: m.name || 'function' })
-              case 'chat': return new ChatMessage(m.content, m.role || 'user')
-              default: return new HumanMessage(m.content)
-            }
-          })
+        if (d.messages?.length) {
+          messageList = d.messages.map((m) => toBaseMessage(m))
         } else if (typeof d.prompt === 'string' && d.type) {
-          const p = d.prompt
-          const t = d.type
-          const msg = t === 'human' ? new HumanMessage(p) : t === 'system' ? new SystemMessage(p) : new AIMessage(p)
+          const msg = d.type === 'human' ? new HumanMessage(d.prompt) : d.type === 'system' ? new SystemMessage(d.prompt) : new AIMessage(d.prompt)
           messageList = [msg]
         } else {
           socket.emit('test_prompt_error', { message: 'Invalid payload: provide messages[] or prompt+type' })
           return
         }
-        const result = await graph.invoke({ messages: messageList })
+        const result = (await graph.invoke({ messages: messageList })) as unknown as AgentState
         const aiMessage = result.messages[result.messages.length - 1]
+        if (!aiMessage) {
+          socket.emit('test_prompt_error', { message: 'No response from model' })
+          return
+        }
         const content = typeof aiMessage.content === 'string'
           ? aiMessage.content
           : JSON.stringify(aiMessage.content)

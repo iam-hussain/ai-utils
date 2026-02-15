@@ -13,6 +13,8 @@ import {
   Workflow,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { isNexusArchitectEnabled } from '@/lib/feature-flags'
+
 export type AppView = 'chat' | 'prompts' | 'saved' | 'prompt-library' | 'mcp' | 'mcp-saved' | 'skills' | 'teams' | 'agent-architect'
 
 interface SidebarProps {
@@ -22,7 +24,7 @@ interface SidebarProps {
   embedded?: boolean
 }
 
-const NAV_GROUPS = [
+const NAV_GROUPS_BASE = [
   {
     label: 'Chat',
     items: [
@@ -41,7 +43,7 @@ const NAV_GROUPS = [
     label: 'Team',
     items: [
       { id: 'teams' as const, label: 'Teams', icon: Users },
-      { id: 'agent-architect' as const, label: 'Nexus Architect', icon: Workflow },
+      ...(isNexusArchitectEnabled ? [{ id: 'agent-architect' as const, label: 'Nexus Architect', icon: Workflow }] : []),
     ],
   },
   {
@@ -62,7 +64,7 @@ export function Sidebar({
   const content = (
     <ScrollArea className="flex-1">
       <nav className="p-3 space-y-6">
-        {NAV_GROUPS.map((group) => (
+        {NAV_GROUPS_BASE.map((group) => (
           <div key={group.label} className="space-y-1">
             <h3 className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {group.label}

@@ -45,3 +45,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   ;(req as Request & { user: AuthPayload }).user = payload
   next()
 }
+
+export function getUserId(req: Request): string {
+  return (req as Request & { user: AuthPayload }).user.userId
+}
