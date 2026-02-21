@@ -1,6 +1,6 @@
 # AI Utils
 
-A full-stack AI chat application with React (Vite), Node.js, LangGraph, Socket.io, and MCP (Model Context Protocol) integration. The backend serves both the API and the built frontend at http://localhost:3005.
+A full-stack AI chat application with React (Vite), Node.js, LangGraph, Socket.io, and MCP (Model Context Protocol) integration. The backend serves both the API and the built frontend at http://localhost:3010.
 
 ## Prerequisites
 
@@ -27,7 +27,7 @@ cp .env.example .env
 
 | Variable | Description |
 |----------|-------------|
-| `PORT` | Server port (default: 3005) |
+| `PORT` | Server port (default: 3010) |
 | `MONGODB_URI` | MongoDB connection string |
 | `JWT_SECRET` | Required in production for auth tokens |
 | `OPENAI_API_KEY` | Required for chat AI |
@@ -59,7 +59,7 @@ cd frontend && npm run dev
 ```
 
 Frontend (Vite dev): http://localhost:5173  
-Backend (API): http://localhost:3005
+Backend (API): http://localhost:3010
 
 ### Production
 

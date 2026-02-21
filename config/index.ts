@@ -12,10 +12,10 @@ if (isProduction && !process.env.JWT_SECRET) {
 }
 
 export const config = {
-  port: Number(process.env.PORT) || 3005,
+  port: Number(process.env.PORT) || 3010,
   mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/ai-utils',
   nodeEnv: process.env.NODE_ENV || 'development',
-  corsOrigins: (process.env.CORS_ORIGIN ?? 'http://localhost:5173,http://localhost:3005')
+  corsOrigins: (process.env.CORS_ORIGIN ?? 'http://localhost:5173,http://localhost:3010')
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean),

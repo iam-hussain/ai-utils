@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isNexusArchitectEnabled } from '@/lib/feature-flags'
+import { VIEW_PATHS } from '@/lib/routes'
 
 export type AppView = 'chat' | 'prompts' | 'saved' | 'prompt-library' | 'mcp' | 'mcp-saved' | 'skills' | 'teams' | 'agent-architect'
 
@@ -58,7 +60,7 @@ const NAV_GROUPS_BASE = [
 
 export function Sidebar({
   currentView,
-  onNavigate,
+  onNavigate: _onNavigate,
   embedded = false,
 }: SidebarProps) {
   const content = (
@@ -73,6 +75,7 @@ export function Sidebar({
               {group.items.map((item) => {
                 const isActive = currentView === item.id
                 const Icon = item.icon
+                const path = VIEW_PATHS[item.id]
                 return (
                   <Button
                     key={item.id}
@@ -82,11 +85,13 @@ export function Sidebar({
                       'w-full justify-start font-normal h-9',
                       !isActive && 'text-muted-foreground hover:text-foreground'
                     )}
-                    onClick={() => onNavigate(item.id)}
+                    asChild
                   >
-                    <Icon className="w-4 h-4 mr-2.5 shrink-0" />
-                    <span className="truncate flex-1 text-left">{item.label}</span>
-                    {isActive && <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-60" />}
+                    <Link to={path}>
+                      <Icon className="w-4 h-4 mr-2.5 shrink-0" />
+                      <span className="truncate flex-1 text-left">{item.label}</span>
+                      {isActive && <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-60" />}
+                    </Link>
                   </Button>
                 )
               })}

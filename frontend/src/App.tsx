@@ -1,5 +1,6 @@
 import type React from 'react'
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { BrowserRouter, useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserDataProvider } from '@/contexts/UserDataContext'
 import { ConfirmProvider } from '@/contexts/ConfirmContext'
@@ -15,6 +16,7 @@ import TeamsPage from '@/components/teams/TeamsPage'
 import NexusArchitectPage from '@/components/nexus-architect/NexusArchitectPage'
 import type { AppView } from '@/components/layout/AppLayout'
 import { isNexusArchitectEnabled } from '@/lib/feature-flags'
+import { VIEW_PATHS, pathToView, DEFAULT_PATH } from '@/lib/routes'
 
 const ROUTE_MAP: Record<
   Exclude<AppView, 'agent-architect'>,
@@ -32,7 +34,6 @@ const ROUTE_MAP: Record<
 
 function App() {
   const { user, loading } = useAuth()
-  const [view, setView] = useState<AppView>('chat')
 
   if (loading) {
     return (
@@ -47,26 +48,34 @@ function App() {
   }
 
   return (
-    <UserDataProvider>
-      <ConfirmProvider>
-        <AppContent view={view} setView={setView} />
-      </ConfirmProvider>
-    </UserDataProvider>
+    <BrowserRouter>
+      <UserDataProvider>
+        <ConfirmProvider>
+          <AppContent />
+        </ConfirmProvider>
+      </UserDataProvider>
+    </BrowserRouter>
   )
 }
 
-function AppContent({
-  view,
-  setView,
-}: {
-  view: AppView
-  setView: (v: AppView) => void
-}) {
+function AppContent() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const pathname = location.pathname.replace(/\/$/, '') || '/'
+  if (pathname === '/' || pathname === '') {
+    return <Navigate to={DEFAULT_PATH} replace />
+  }
+  const view = pathToView(location.pathname) ?? 'chat'
+
+  const setView = (v: AppView) => {
+    navigate(VIEW_PATHS[v])
+  }
+
   useEffect(() => {
     if (view === 'agent-architect' && !isNexusArchitectEnabled) {
-      setView('chat')
+      navigate(DEFAULT_PATH)
     }
-  }, [view, setView])
+  }, [view, navigate])
 
   if (view === 'agent-architect') {
     if (!isNexusArchitectEnabled) {
@@ -75,7 +84,7 @@ function AppContent({
     return <NexusArchitectPage currentView={view} onNavigate={setView} />
   }
 
-  const Page = ROUTE_MAP[view] ?? PromptTestingPage
+  const Page = ROUTE_MAP[view] ?? ChatLayout
   return <Page currentView={view} onNavigate={setView} />
 }
 

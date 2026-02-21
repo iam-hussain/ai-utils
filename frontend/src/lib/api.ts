@@ -2,7 +2,7 @@
  * Shared API configuration for all fetch calls.
  */
 
-const API_BASE = import.meta.env.PROD ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:3005')
+const API_BASE = import.meta.env.PROD ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:3010')
 
 export const apiConfig = {
   baseUrl: API_BASE,
