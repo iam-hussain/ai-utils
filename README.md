@@ -61,6 +61,16 @@ cd frontend && npm run dev
 Frontend (Vite dev): http://localhost:5173  
 Backend (API): http://localhost:3010
 
+### Seed data
+
+Populate the database with sample users, teams, projects, issues, comments, chats, and invites:
+
+```bash
+npm run seed
+```
+
+Creates 4 users (alice, bob, carol, dave), 3 teams, 4 projects, 8 issues, comments, chats, and a pending team invite. All seed users share password: `seed123456`.
+
 ### Production
 
 ```bash
@@ -93,6 +103,7 @@ ai-utils/
 ├── public/          # Static assets
 ├── tests/           # Test files
 ├── frontend/        # React (Vite) application
+├── scripts/         # Seed and utility scripts
 ├── .env.example
 └── README.md
 ```

@@ -3,7 +3,6 @@ import { socket } from '@/lib/socket'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Select,
   SelectContent,
@@ -12,6 +11,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { AppLayout, type AppView } from '@/components/layout/AppLayout'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { PageContent } from '@/components/layout/PageContent'
+import { InlineAlert } from '@/components/ui/inline-alert'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import {
   createTeam,
   inviteToTeam,
@@ -363,42 +366,37 @@ export default function TeamsPage({ currentView, onNavigate }: TeamsPageProps) {
   }
 
   return (
-    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected}>
-      <header className="h-14 shrink-0 border-b flex items-center justify-between px-4 sm:px-6 bg-background/80 backdrop-blur sticky top-0 z-10">
-        <div>
-          <h1 className="font-semibold text-base">Teams</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Share prompt library and saved prompts with your team
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="New team name"
-            value={newTeamName}
-            onChange={(e) => setNewTeamName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-            className="w-48 h-9"
-            disabled={creating}
-          />
-          <Button
-            size="sm"
-            onClick={handleCreate}
-            disabled={creating || !newTeamName.trim()}
-            className="gap-1.5"
-          >
-            {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-            Create team
-          </Button>
-        </div>
-      </header>
-
-      <ScrollArea className="flex-1">
-        <div className="max-w-3xl mx-auto p-6 space-y-8">
-          {error && (
-            <div className="text-sm text-destructive bg-destructive/10 rounded-lg px-4 py-3" role="alert">
-              {error}
+    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected} title="Teams">
+      <div className="flex flex-col h-full overflow-hidden">
+        <PageHeader
+          title="Teams"
+          subtitle="Share prompt library and saved prompts with your team"
+          actions={
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="New team name"
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+                className="w-40 sm:w-48 h-9"
+                disabled={creating}
+              />
+              <Button
+                size="sm"
+                onClick={handleCreate}
+                disabled={creating || !newTeamName.trim()}
+                className="gap-1.5 shrink-0"
+              >
+                {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                Create team
+              </Button>
             </div>
-          )}
+          }
+        />
+
+        <PageContent>
+          <div className="space-y-8">
+          {error && <InlineAlert>{error}</InlineAlert>}
 
           {invites.length > 0 && (
             <section>
@@ -513,9 +511,7 @@ export default function TeamsPage({ currentView, onNavigate }: TeamsPageProps) {
           </section>
 
           {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-            </div>
+            <LoadingSpinner size="lg" label="Loading teams..." className="py-16" />
           ) : teams.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-16 px-6 text-center">
@@ -791,8 +787,9 @@ export default function TeamsPage({ currentView, onNavigate }: TeamsPageProps) {
               </ul>
             </section>
           )}
-        </div>
-      </ScrollArea>
+          </div>
+        </PageContent>
+      </div>
     </AppLayout>
   )
 }

@@ -3,8 +3,10 @@ import { socket } from '@/lib/socket'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { AppLayout, type AppView } from '@/components/layout/AppLayout'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { PageContent } from '@/components/layout/PageContent'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useUserData } from '@/contexts/UserDataContext'
 import { useConfirm } from '@/contexts/ConfirmContext'
 import { createSkill, type Skill } from '@/lib/skills'
@@ -133,35 +135,34 @@ export default function SkillsPage({ currentView, onNavigate }: SkillsPageProps)
   const editingOrAdding = editingId !== null || isAdding
 
   return (
-    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected}>
-      <header className="h-14 shrink-0 border-b flex items-center justify-between px-4 sm:px-6 bg-background/80 backdrop-blur sticky top-0 z-10">
-        <div>
-          <h1 className="font-semibold text-base">Skills</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Markdown context for Chat and Prompts — {skills.length} {skills.length === 1 ? 'skill' : 'skills'}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleImport} className="gap-1.5">
-            <Upload className="w-3.5 h-3.5" />
-            Import .md
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".md"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-          <Button size="sm" onClick={() => setIsAdding(true)} disabled={isAdding} className="gap-1.5">
-            <Plus className="w-3.5 h-3.5" />
-            Add skill
-          </Button>
-        </div>
-      </header>
+    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected} title="Skills">
+      <div className="flex flex-col h-full overflow-hidden">
+        <PageHeader
+          title="Skills"
+          subtitle={`Markdown context for Chat and Prompts — ${skills.length} ${skills.length === 1 ? 'skill' : 'skills'}`}
+          actions={
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleImport} className="gap-1.5">
+                <Upload className="w-3.5 h-3.5" />
+                Import .md
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".md"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <Button size="sm" onClick={() => setIsAdding(true)} disabled={isAdding} className="gap-1.5">
+                <Plus className="w-3.5 h-3.5" />
+                Add skill
+              </Button>
+            </div>
+          }
+        />
 
-      <ScrollArea className="flex-1">
-        <div className="max-w-3xl mx-auto p-6 space-y-6">
+        <PageContent>
+          <div className="space-y-6">
           {editingOrAdding && (
             <Card className="border-primary/30">
               <CardContent className="p-4 space-y-4">
@@ -204,15 +205,11 @@ export default function SkillsPage({ currentView, onNavigate }: SkillsPageProps)
           )}
 
           {skills.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                <div className="rounded-2xl bg-muted/50 p-6 mb-4">
-                  <FileCode className="w-12 h-12 text-muted-foreground/60" />
-                </div>
-                <h2 className="font-medium text-base mb-1">No skills yet</h2>
-                <p className="text-sm text-muted-foreground max-w-sm mb-6">
-                  Skills are Markdown snippets that get injected into your Chat and Prompt Testing context. Import from .md files or create new ones.
-                </p>
+            <EmptyState
+              icon={<FileCode />}
+              title="No skills yet"
+              description="Skills are Markdown snippets that get injected into your Chat and Prompt Testing context. Import from .md files or create new ones."
+              action={
                 <div className="flex flex-wrap gap-2 justify-center">
                   <Button onClick={handleImport} variant="outline" className="gap-2">
                     <Upload className="w-4 h-4" />
@@ -223,8 +220,8 @@ export default function SkillsPage({ currentView, onNavigate }: SkillsPageProps)
                     Add skill
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              }
+            />
           ) : (
             <div className="space-y-3">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground px-1">
@@ -294,8 +291,9 @@ export default function SkillsPage({ currentView, onNavigate }: SkillsPageProps)
               </ul>
             </div>
           )}
-        </div>
-      </ScrollArea>
+          </div>
+        </PageContent>
+      </div>
     </AppLayout>
   )
 }

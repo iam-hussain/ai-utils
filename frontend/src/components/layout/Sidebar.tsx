@@ -12,12 +12,15 @@ import {
   ChevronRight,
   Users,
   Workflow,
+  Bug,
+  FolderKanban,
+  Settings,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isNexusArchitectEnabled } from '@/lib/feature-flags'
 import { VIEW_PATHS } from '@/lib/routes'
 
-export type AppView = 'chat' | 'prompts' | 'saved' | 'prompt-library' | 'mcp' | 'mcp-saved' | 'skills' | 'teams' | 'agent-architect'
+export type AppView = 'chat' | 'prompts' | 'saved' | 'prompt-library' | 'mcp' | 'mcp-saved' | 'skills' | 'teams' | 'projects' | 'agent-architect' | 'issues' | 'issues-new' | 'settings'
 
 interface SidebarProps {
   currentView: AppView
@@ -45,6 +48,8 @@ const NAV_GROUPS_BASE = [
     label: 'Team',
     items: [
       { id: 'teams' as const, label: 'Teams', icon: Users },
+      { id: 'projects' as const, label: 'Projects', icon: FolderKanban },
+      { id: 'issues' as const, label: 'Issues & Reports', icon: Bug },
       ...(isNexusArchitectEnabled ? [{ id: 'agent-architect' as const, label: 'Nexus Architect', icon: Workflow }] : []),
     ],
   },
@@ -55,6 +60,10 @@ const NAV_GROUPS_BASE = [
       { id: 'mcp-saved' as const, label: 'Saved MCP', icon: PlugZap },
       { id: 'skills' as const, label: 'Skills', icon: FileCode },
     ],
+  },
+  {
+    label: 'Account',
+    items: [{ id: 'settings' as const, label: 'Settings', icon: Settings }],
   },
 ] as const
 
@@ -67,7 +76,13 @@ export function Sidebar({
     <ScrollArea className="flex-1">
       <nav className="p-3 space-y-6">
         {NAV_GROUPS_BASE.map((group) => (
-          <div key={group.label} className="space-y-1">
+          <div
+            key={group.label}
+            className={cn(
+              'space-y-1',
+              group.label === 'Account' && 'pt-4 mt-2 border-t border-border/60'
+            )}
+          >
             <h3 className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {group.label}
             </h3>

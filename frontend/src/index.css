@@ -36,6 +36,7 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
+    --sidebar-width: 14rem;
   }
 
   .dark {
@@ -83,7 +84,8 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
     min-height: 100dvh;
     min-height: 100vh;
     overflow-x: hidden;

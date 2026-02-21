@@ -17,6 +17,8 @@ import userDataRouter from '../routes/user-data'
 import teamsRouter from '../routes/teams'
 import invitesRouter from '../routes/invites'
 import agentRunsRouter from '../routes/agent-runs'
+import issuesRouter from '../routes/issues'
+import projectsRouter from '../routes/projects'
 
 const corsOrigin =
   config.corsOrigins.length === 1 && config.corsOrigins[0] === '*'
@@ -40,7 +42,7 @@ app.use(
   })
 )
 app.use(cookieParser())
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 
 app.use(
   '/api',
@@ -53,7 +55,24 @@ app.use(
 
 mongoose
   .connect(config.mongodbUri)
-  .then(() => logger.info('Connected to MongoDB'))
+  .then(async () => {
+    logger.info('Connected to MongoDB')
+    const { Team } = await import('../models/Team')
+    const coll = mongoose.connection.collection('projects')
+    const legacy = await coll.find({ teamId: { $exists: true } }).toArray()
+    for (const doc of legacy) {
+      const teamId = doc.teamId
+      const team = await Team.findById(teamId).select('ownerId').lean()
+      const ownerId = team?.ownerId ?? doc.ownerId
+      await coll.updateOne(
+        { _id: doc._id },
+        { $set: { teamIds: [teamId], ownerId }, $unset: { teamId: 1 } }
+      )
+    }
+    if (legacy.length > 0) {
+      logger.info('Migrated projects to teamIds', { count: legacy.length })
+    }
+  })
   .catch((err) => logger.error('MongoDB connection error', { error: err }))
 
 setupChatSockets(io)
@@ -78,6 +97,8 @@ app.use('/api/user-data', userDataRouter)
 app.use('/api/teams', teamsRouter)
 app.use('/api/invites', invitesRouter)
 app.use('/api/agent-runs', agentRunsRouter)
+app.use('/api/issues', issuesRouter)
+app.use('/api/projects', projectsRouter)
 
 if (config.isProduction) {
   app.use(express.static(path.join(__dirname, '../frontend/dist')))

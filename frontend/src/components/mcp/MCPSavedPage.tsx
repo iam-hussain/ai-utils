@@ -2,8 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { socket } from '@/lib/socket'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { AppLayout, type AppView } from '@/components/layout/AppLayout'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { PageContent } from '@/components/layout/PageContent'
+import { EmptyState } from '@/components/ui/empty-state'
+import { InlineAlert } from '@/components/ui/inline-alert'
 import { useUserData } from '@/contexts/UserDataContext'
 import { useConfirm } from '@/contexts/ConfirmContext'
 import type { MCPServerConfig } from '@/lib/mcp-servers'
@@ -135,67 +138,45 @@ export default function MCPSavedPage({ currentView, onNavigate }: MCPSavedPagePr
   const serverEntries = Object.entries(servers.mcpServers)
 
   return (
-    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected}>
-      <header className="h-14 shrink-0 border-b flex items-center justify-between px-6 bg-background/80 backdrop-blur sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onNavigate('mcp')}
-            className="gap-1.5 -ml-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-          <div className="h-4 w-px bg-border" />
-          <div>
-            <h1 className="font-semibold text-base">Saved MCP servers</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {serverEntries.length} {serverEntries.length === 1 ? 'server' : 'servers'} saved
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {serverEntries.length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyConfig}
-              className="gap-1.5"
-            >
-              {copied ? (
-                <Check className="w-3.5 h-3.5 text-primary" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
+    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected} title="Saved MCP servers">
+      <div className="flex flex-col h-full overflow-hidden">
+        <PageHeader
+          title="Saved MCP servers"
+          subtitle={`${serverEntries.length} ${serverEntries.length === 1 ? 'server' : 'servers'} saved`}
+          actions={
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => onNavigate('mcp')} className="gap-1.5 -ml-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+              {serverEntries.length > 0 && (
+                <Button variant="outline" size="sm" onClick={handleCopyConfig} className="gap-1.5">
+                  {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? 'Copied' : 'Copy config'}
+                </Button>
               )}
-              {copied ? 'Copied' : 'Copy config'}
-            </Button>
-          )}
-          <Button size="sm" onClick={() => onNavigate('mcp')} className="gap-1.5">
-            <Plus className="w-3.5 h-3.5" />
-            Add server
-          </Button>
-        </div>
-      </header>
+              <Button size="sm" onClick={() => onNavigate('mcp')} className="gap-1.5">
+                <Plus className="w-3.5 h-3.5" />
+                Add server
+              </Button>
+            </div>
+          }
+        />
 
-      <ScrollArea className="flex-1">
-        <div className="max-w-3xl mx-auto p-6 space-y-6">
+        <PageContent>
+          <div className="space-y-6">
           {serverEntries.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                <div className="rounded-2xl bg-muted/50 p-6 mb-4">
-                  <Server className="w-12 h-12 text-muted-foreground/60" />
-                </div>
-                <h2 className="font-medium text-base mb-1">No servers yet</h2>
-                <p className="text-sm text-muted-foreground max-w-sm mb-6">
-                  Add MCP servers from the MCP Server page. They will appear here for quick connect and tool selection.
-                </p>
+            <EmptyState
+              icon={<Server />}
+              title="No servers yet"
+              description="Add MCP servers from the MCP Server page. They will appear here for quick connect and tool selection."
+              action={
                 <Button onClick={() => onNavigate('mcp')} className="gap-2">
                   <Plus className="w-4 h-4" />
                   Add MCP server
                 </Button>
-              </CardContent>
-            </Card>
+              }
+            />
           ) : (
             <div className="space-y-3">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground px-1">
@@ -270,14 +251,7 @@ export default function MCPSavedPage({ currentView, onNavigate }: MCPSavedPagePr
             </div>
           )}
 
-          {error && (
-            <div
-              className="flex items-center gap-3 text-sm text-destructive bg-destructive/10 rounded-lg px-4 py-3"
-              role="alert"
-            >
-              {error}
-            </div>
-          )}
+          {error && <InlineAlert>{error}</InlineAlert>}
 
           {result && connectedServerName && (
             <section className="space-y-4">
@@ -355,8 +329,9 @@ export default function MCPSavedPage({ currentView, onNavigate }: MCPSavedPagePr
               </Card>
             </section>
           )}
-        </div>
-      </ScrollArea>
+          </div>
+        </PageContent>
+      </div>
     </AppLayout>
   )
 }

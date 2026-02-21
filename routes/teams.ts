@@ -5,6 +5,7 @@ import { User } from '../models/User'
 import { TeamInvite } from '../models/TeamInvite'
 import { TeamJoinRequest } from '../models/TeamJoinRequest'
 import { requireAuth } from '../lib/auth'
+import { teamQueryForUser } from '../lib/access'
 import { logger } from '../lib/logger'
 import {
   createTeamSchema,
@@ -93,9 +94,7 @@ function canManageMembers(team: TeamDoc, userId: string): boolean {
 router.get('/', async (req: Request, res: Response) => {
   try {
     const userId = (req as Request & { user: { userId: string } }).user.userId
-    const teams = await Team.find({
-      $or: [{ ownerId: userId }, { memberIds: userId }],
-    })
+    const teams = await Team.find(teamQueryForUser(userId))
       .sort({ updatedAt: -1 })
       .lean()
     res.json(teams.map(toTeamResponse))

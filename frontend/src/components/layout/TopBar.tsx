@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -8,7 +9,6 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { SettingsSheet } from '@/components/settings/SettingsSheet'
 import { Settings, Wifi, WifiOff, Menu, Sun, Moon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -33,7 +33,6 @@ function getInitials(email: string, name?: string): string {
 
 export function TopBar({ title, isConnected, actions, sidebarContent }: TopBarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const { user } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const displayName = user?.name?.trim() || user?.email || ''
@@ -99,18 +98,20 @@ export function TopBar({ title, isConnected, actions, sidebarContent }: TopBarPr
             variant="ghost"
             size="sm"
             className="gap-2 h-8 px-2 max-w-[140px]"
-            onClick={() => setSettingsOpen(true)}
+            asChild
             aria-label="Open settings"
           >
-            <Avatar className="h-6 w-6">
-              <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                {getInitials(user.email, user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <span className="truncate text-sm font-medium hidden sm:inline">
-              {displayName || user.email}
-            </span>
-            <Settings className="w-4 h-4 shrink-0 sm:hidden" />
+            <Link to="/settings">
+              <Avatar className="h-6 w-6">
+                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                  {getInitials(user.email, user.name)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="truncate text-sm font-medium hidden sm:inline">
+                {displayName || user.email}
+              </span>
+              <Settings className="w-4 h-4 shrink-0 sm:hidden" />
+            </Link>
           </Button>
         )}
         {user && (
@@ -119,12 +120,13 @@ export function TopBar({ title, isConnected, actions, sidebarContent }: TopBarPr
             size="icon"
             className="h-8 w-8 hidden sm:flex"
             aria-label="Settings"
-            onClick={() => setSettingsOpen(true)}
+            asChild
           >
-            <Settings className="w-4 h-4" />
+            <Link to="/settings">
+              <Settings className="w-4 h-4" />
+            </Link>
           </Button>
         )}
-        <SettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     </header>
   )

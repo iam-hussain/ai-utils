@@ -10,7 +10,11 @@ export const VIEW_PATHS: Record<AppView, string> = {
   'mcp-saved': '/mcp-saved',
   skills: '/skills',
   teams: '/teams',
+  projects: '/projects',
   'agent-architect': '/nexus-architect',
+  issues: '/issues',
+  'issues-new': '/issues/new',
+  settings: '/settings',
 } as const
 
 export const DEFAULT_PATH = VIEW_PATHS.chat

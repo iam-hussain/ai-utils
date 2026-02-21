@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AppLayout, type AppView } from '@/components/layout/AppLayout'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { PageContent } from '@/components/layout/PageContent'
+import { InlineAlert } from '@/components/ui/inline-alert'
 import { useUserData } from '@/contexts/UserDataContext'
 import type { MCPServerConfig } from '@/lib/mcp-servers'
 import {
@@ -150,33 +153,32 @@ export default function MCPPage({
   const savedCount = Object.keys(servers.mcpServers).length
 
   return (
-    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected}>
-      <header className="h-14 shrink-0 border-b flex items-center justify-between px-4 sm:px-6 bg-background/80 backdrop-blur sticky top-0 z-10">
-        <div>
-          <h1 className="font-semibold text-base">MCP Server</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Connect Model Context Protocol servers to use tools in Chat and Prompts
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2 shrink-0"
-          onClick={() => onNavigate('mcp-saved')}
-        >
-          <Server className="w-4 h-4" />
-          Saved servers
-          {savedCount > 0 && (
-            <span className="ml-1 min-w-[1.25rem] h-5 px-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center justify-center">
-              {savedCount}
-            </span>
-          )}
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Button>
-      </header>
+    <AppLayout currentView={currentView} onNavigate={onNavigate} isConnected={isConnected} title="MCP Server">
+      <div className="flex flex-col h-full overflow-hidden">
+        <PageHeader
+          title="MCP Server"
+          subtitle="Connect Model Context Protocol servers to use tools in Chat and Prompts"
+          actions={
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 shrink-0"
+              onClick={() => onNavigate('mcp-saved')}
+            >
+              <Server className="w-4 h-4" />
+              Saved servers
+              {savedCount > 0 && (
+                <span className="ml-1 min-w-[1.25rem] h-5 px-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center justify-center">
+                  {savedCount}
+                </span>
+              )}
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          }
+        />
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto p-6 space-y-8">
+        <PageContent>
+          <div className="space-y-8">
           {/* Quick Connect — primary action first */}
           <section>
             <div className="flex items-center gap-2 mb-3">
@@ -304,19 +306,16 @@ export default function MCPPage({
 
           {/* Alerts */}
           {error && (
-            <div
-              className="flex items-center gap-3 text-sm text-destructive bg-destructive/10 rounded-lg px-4 py-3"
-              role="alert"
-            >
+            <InlineAlert>
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
-            </div>
+            </InlineAlert>
           )}
 
           {/* Connection result */}
           {result && (
             <section className="space-y-4">
-              <div className="flex items-center gap-3 text-sm bg-primary/10 text-primary rounded-lg px-4 py-3">
+              <InlineAlert variant="success">
                 <CheckCircle className="w-4 h-4 shrink-0" />
                 <span>
                   Connected
@@ -328,7 +327,7 @@ export default function MCPPage({
                     </span>
                   )}
                 </span>
-              </div>
+              </InlineAlert>
 
               <Card>
                 <CardHeader className="pb-2">
@@ -396,7 +395,8 @@ export default function MCPPage({
               </Card>
             </section>
           )}
-        </div>
+          </div>
+        </PageContent>
       </div>
     </AppLayout>
   )
